@@ -14,15 +14,6 @@ const instance = axios.create({
 // 对每个请求进行标记，并把 cancle 方法储存，如果再次请求中有相同的就取消上一次请求，重新请求
 let cancelToken = axios.CancelToken;
 
-// 请求 pending 对象
-const pending = {}
-const removePending = (item, isRequest = false) => {
-  // 请求中存在相同的重复请求去除掉，避免短时间重复请求
-  if (pending[item] && isRequest) {
-    pending[item]('取消重复请求')
-  }
-  delete pending[item]
-}
 // 获取请求标志，对请求队列进行命名
 const getRequestMarker = (config, isReuest = false) => {
   let url = config.url
@@ -39,16 +30,16 @@ instance.interceptors.request.use(
       config.headers['token'] = localStorage.get('token')
     }
 
-    // 发送前执行一下取消操作，把相同的重复请求去除掉，避免短时间重复请求
-    let requestMarker = getRequestMarker(config, true)
-    removePending(requestMarker, true)
-
     // 储存 pending 对象
     config.cancelToken = new cancelToken(cancel => {
-      pending[requestMarker] = cancel
-
+      // 发送前执行一下取消操作，把相同的重复请求去除掉，避免短时间重复请求
+      let requestMarker = getRequestMarker(config, true)
       // 提交到 store 进行记录
-      store.commit('axiosCancle/set', { cancel })
+      const params = {
+        cancel,
+        key: requestMarker
+      }
+      store.commit('axiosCancle/add', params)
     })
 
     // loading
@@ -69,8 +60,8 @@ instance.interceptors.request.use(
 
 instance.interceptors.response.use((response) => {
   // 响应后再执行一下取消操作，把已经完成的请求从 pending 中移除
-  let requestMarker = getRequestMarker(response.config, true)
-  removePending(requestMarker)
+    let requestMarker = getRequestMarker(response.config, true)
+    store.commit('axiosCancle/remove', requestMarker)
 
   // 清除 loading
   Toast.clear()

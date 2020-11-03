@@ -53,7 +53,7 @@ const router = new VueRouter({
 // 跳转前
 router.beforeEach((to, from, next) => {
   //路由发生变化清除所有 axios 请求
-  store.commit('axiosCancle/remove')
+  store.commit('axiosCancle/clear')
 
   //路由发生变化修改页面title
   // document.title = to.meta.title || '阅读'
