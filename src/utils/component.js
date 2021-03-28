@@ -3,7 +3,8 @@
 import Vue from 'vue'
 
 //找到components/global文件夹下以.vue命名的文件
-const componentVue = require.context('@/components/global', false, /\.vue$/)
+// const componentVue = require.context('@/components/global', false, /\.vue$/)
+const componentVue = require.context('@/plugins', false, /\.js$/)
 //找到components文件夹下以index.js命名的文件
 const componentIndexJS = require.context('@/components', true, /index.js$/)
 
